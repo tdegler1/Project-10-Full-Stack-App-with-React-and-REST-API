@@ -73,16 +73,16 @@ router.get('/users', authenticateUser, asyncHandler(async (req, res) => {
 /* POST a new user. */
 router.post('/users', [
   check('firstName')
-    .exists()
+    .exists({ checkNull: true, checkFalsy: true })
     .withMessage('Please provide a value for "firstName"'),
   check('lastName')
-    .exists()
+    .exists({ checkNull: true, checkFalsy: true })
     .withMessage('Please provide a value for "lastName"'),
   check('emailAddress')
     .isEmail()
     .withMessage('Please provide a valid email address for "emailAddress"'),
   check('password')
-    .exists()
+    .exists({ checkNull: true, checkFalsy: true })
     .withMessage('Please provide a value for "password"'),
   ], asyncHandler (async (req, res) => {
     const errors = validationResult(req);
