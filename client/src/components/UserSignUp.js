@@ -107,23 +107,27 @@ export default class UserSignUp extends Component {
       password,
       confirmPassword
     };
-console.log ("Password in UserSignUp: " + password);
-    context.data.createUser(user)
-      .then( errors => {
-        if (errors.length) {
-          this.setState({ errors });
-        } else {
-          context.actions.signIn(emailAddress, password)
-            .then(() => {
-              this.props.history.push('/');    
-            });
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-        this.props.history.push('/error');
-      });
-  
+      
+    // Make sure "Password" and "Confirm Password" inputs match. 
+    if (password === confirmPassword) {
+      context.data.createUser(user)
+        .then( errors => {
+          if (errors.length) {
+            this.setState({ errors });
+          } else {
+            context.actions.signIn(emailAddress, password)
+              .then(() => {
+                this.props.history.push('/');    
+              });
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          this.props.history.push('/error');
+        });
+    } else {
+      this.setState({ errors: ['"Password" must match "Confirm Password"']})
+    }
   }
 
   cancel = () => {
