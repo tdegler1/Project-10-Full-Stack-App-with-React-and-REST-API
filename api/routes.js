@@ -64,7 +64,8 @@ router.get('/users', authenticateUser, asyncHandler(async (req, res) => {
         attributes: [
             'firstName', 
             'lastName', 
-            'emailAddress'
+            'emailAddress',
+            'id'
         ]
     });
   res.status(200).json(authUser);
@@ -160,7 +161,9 @@ router.post('/courses', authenticateUser, [
     res.status(400).json({ errors: errorMessages });
   } else {
       // Otherwise, add the new course.
+      console.log("Going to POST!");
       course = await Course.create(req.body);
+      console.log("Did we make it?");
       res.location('courses/' + course.id);
       res.status(201).end();
     }
