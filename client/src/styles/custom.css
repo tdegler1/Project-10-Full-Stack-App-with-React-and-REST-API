@@ -1,0 +1,58 @@
+/* Custom styles */
+
+.course--header .course--title {
+  font-size: 36px;
+}
+
+.course--title--input {
+  font-size: 36px;
+}
+
+.header {
+  background: #284b63;
+  padding: 20px 0;
+  margin-bottom: 40px;
+}
+
+.course--module {
+  background: #3c6e71;
+}
+
+.course--module:hover {
+  background: #4b868a;
+}
+
+.course--add--module {
+  background: #eee;
+}
+
+.course--add--module:hover {
+  background: #ccc;
+}
+
+.button:not(.button-secondary) {
+  background: #3c6e71;
+}
+
+.button:not(.button-secondary):hover {
+  background: #4b868a;
+}
+
+.button.btn-delete {
+  background: #d34e24;
+}
+
+.button.btn-delete:hover {
+  background: #ce5f3c;
+}
+
+.button-secondary {
+  color: #3c6e71;
+  background: none;
+  box-shadow: 0 0 0 2px #3c6e71 inset;
+}
+
+.button-secondary:hover {
+  color: #569093;
+  box-shadow: 0 0 0 2px #569093 inset;
+}
