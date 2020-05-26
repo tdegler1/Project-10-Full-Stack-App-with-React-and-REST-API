@@ -33,6 +33,7 @@ export class Provider extends Component {
   }
 
   
+// Returns the user according to emailAddress and password parameters, and persists the user into global state if successful.
   signIn = async (emailAddress, password) => {
     const user = await this.data.getUser(emailAddress, password);
     if (user !== null) {
@@ -46,6 +47,8 @@ export class Provider extends Component {
     return user;
 }
 
+  
+//  Set authenticatedUser to null and remove cookies.
   signOut = () => {
     this.setState({ authenticatedUser: null });
     Cookies.remove('authenticatedUser');
