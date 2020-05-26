@@ -1,3 +1,5 @@
+// UserSignIn - This component provides the "Sign In" screen by rendering a form that allows a user to sign using their existing account information. The component also renders a "Sign In" button that when clicked signs in the user and a "Cancel" button that returns the user to the default route (i.e. the list of courses).
+
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import Form from './Form';
@@ -51,6 +53,8 @@ export default class UserSignIn extends Component {
     );
   }
 
+  
+  // Helper method that changes the value of each component's state as the user types into the field.
   change = (event) => {
     const name = event.target.name;
     const value = event.target.value;
@@ -62,11 +66,15 @@ export default class UserSignIn extends Component {
     });
   }
 
+  
+// [from SIGN IN button] - submit handler
   submit = () => {
     const { context } = this.props;
-    const { from } = this.props.location.state || { from: { pathname: '/' } };
     const { emailAddress, password } = this.state;
+    // retain this url to be able to return once user has signed in.
+    const { from } = this.props.location.state || { from: { pathname: '/' } };
 
+    // Call the signIn method from context
     context.actions.signIn(emailAddress, password)
       .then((user) => {
         if (user === null) {
@@ -74,6 +82,7 @@ export default class UserSignIn extends Component {
             return { errors: [ 'Sign-in was unsuccessful' ] };
           });
         } else {
+          // Redirect URL to previous location once user has signed in.
           this.props.history.push(from);
         }
       })
@@ -83,6 +92,7 @@ export default class UserSignIn extends Component {
       });
   }
 
+  // [from CANCEL button] - sends the user back to the root (list of courses).
   cancel = () => {
     this.props.history.push('/');
   }

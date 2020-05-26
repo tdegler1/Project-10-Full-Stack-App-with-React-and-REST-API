@@ -1,33 +1,60 @@
-// CreateCourse - This component provides the "Create Course" screen by rendering a form that allows a user to create a new course. The component also renders a "Create Course" button that when clicked sends a POST request to the REST API's /api/courses route. This component also renders a "Cancel" button that returns the user to the default route (i.e. the list of courses).
+// UpdateCourse - This component provides the "Update Course" screen by rendering a form that allows a user to update one of their existing courses. The component also renders an "Update Course" button that when clicked sends a PUT request to the REST API's /api/courses/:id route. This component also renders a "Cancel" button that returns the user to the "Course Detail" screen.
 
 import React, { Component } from 'react';
 import Form from './Form';
 
-export default class CreateCourse extends Component {
+export default class UpdateCourse extends Component {
   state = {
+    id: null,
     title: '',
     description: '',
     estimatedTime: '',
     materialsNeeded: '',
     userId: null,
+    firstName: '',
+    lastName: '',
     errors: [],
   }
 
-  render() {
-    // we'll need to retrieve the authenticated user from context to populate the first name and last name (author) section of course details.
+// Get the current course as displayed in Course Details when the component gets mounted.
+  async componentDidMount() {
     const { context } = this.props;
     const authenticatedUser = context.authenticatedUser;
-    // state variables will hold the input values from the form.
-    const {title, description, estimatedTime, materialsNeeded, errors} = this.state;
+    const course = await context.data.getCourse(this.props.match.params.id);
+    // if the course exists, check to make sure the user who is signed in (authenticated) is the owner of the course. If not, Access Denied. Else proceed to set the state variables with the current course info.
+    if (course){
+      if (course.User.id !== authenticatedUser.id) {
+        this.props.history.push('/forbidden');
+      } else {
+          this.setState({
+          id: course.id,
+          title: course.title,
+          description: course.description,
+          estimatedTime: course.estimatedTime,
+          materialsNeeded: course.materialsNeeded,
+          userId: course.User.id,
+          firstName: course.User.firstName,
+          lastName: course.User.lastName,
+        })
+        console.log("UpdateCourse.js - Current Course: " + JSON.stringify(this.state));
+      }
+    } else {
+      console.log ("There is no course with that ID.");
+      this.props.history.push('/notfound');
+    }
+  }
 
+  render() {  
+    // Using the current course data to populate the form.
+    const {firstName, lastName, title, description, estimatedTime, materialsNeeded, errors} = this.state;
     return (
       <div className="bounds course--detail">
-          <h1>Create Course</h1>
+          <h1>Update Course</h1>
           <Form 
             cancel={this.cancel}
             errors={errors}
             submit={this.submit}
-            submitButtonText="Create Course"
+            submitButtonText="Update Course"
             elements={() => (
               <React.Fragment>
                 <div className="grid-66">
@@ -43,7 +70,7 @@ export default class CreateCourse extends Component {
                         placeholder="Course title..."
                         className="input-title course--title--input" />
                     </div>
-                    <p>By {authenticatedUser.firstName} {authenticatedUser.lastName}</p>
+                    <p>By {firstName} {lastName}</p>
                   </div>
                   <div className="course--description">
                     <div>
@@ -52,8 +79,7 @@ export default class CreateCourse extends Component {
                         name="description" 
                         value={description} 
                         onChange={this.change} 
-                        placeholder="Course description..." >
-                      </textarea>
+                        placeholder="Course description..." />
                     </div>
                   </div>
                 </div>
@@ -83,16 +109,14 @@ export default class CreateCourse extends Component {
                             type="text"
                             value={materialsNeeded} 
                             onChange={this.change} 
-                            placeholder="List materials..." > 
-                          </textarea>
+                            placeholder="List materials..." />
                         </div>
                       </li>
                     </ul>
                   </div>
                 </div>
               </React.Fragment>
-            )} 
-          />   
+            )} />   
       </div>    
     );
   }
@@ -109,28 +133,26 @@ export default class CreateCourse extends Component {
     });
   }
 
-  // [from CREATE COURSE button] - submit handler
+  // [from UPDATE COURSE button] - submit handler
   submit = () => {
     // we'll need the authenticated user's email address and password (signin credentials) for this to approve.
     const { context } = this.props;
     const authenticatedUser = context.authenticatedUser;
     const { emailAddress, password } = authenticatedUser;
-    // retain this url to be able to return once user has signed in.
-    const { from } = this.props.location.state || { from: { pathname: '/' } };
 
-    // collect the values input by the user
-    const {title, description, estimatedTime, materialsNeeded} = this.state;
+    // collect the edited values input by the user
+    const {id, title, description, estimatedTime, materialsNeeded} = this.state;
 
-    // set the course object with the input values
-    const newCourse = {title, description, estimatedTime, materialsNeeded, userId: context.authenticatedUser.id};
-    console.log("CreateCourse newCourse: " + JSON.stringify(newCourse));
+    // set the course object with the edited input values
+    const updatedCourse = {id, title, description, estimatedTime, materialsNeeded, userId: context.authenticatedUser.id};
+    console.log("Updated Course: " + JSON.stringify(updatedCourse));
       
-    context.data.createCourse(newCourse, emailAddress, password)
+    context.data.updateCourse(updatedCourse, emailAddress, password)
       .then( errors => {
         if (errors.length) {
           this.setState({ errors });
         } else {
-            this.props.history.push(from);
+            this.props.history.push('/');   
             };
       })
       .catch((err) => {
@@ -139,8 +161,8 @@ export default class CreateCourse extends Component {
       });
   }
 
-  // [from CANCEL button] - sends the user back to the root (list of courses).
+  // [from CANCEL button] - sends the user back to the course details screen.
   cancel = () => {
-   this.props.history.push('/');
+   this.props.history.push(`/courses/${this.state.id}`);
   }
 }
