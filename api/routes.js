@@ -92,12 +92,18 @@ router.post('/users', [
       const errorMessages = errors.array().map(error => error.msg);
       return res.status(400).json({ errors: errorMessages });
     } else {
-        // Hash the password and create new user.
-        req.body.password = bcryptjs.hashSync(req.body.password);
-        user = await User.create(req.body);
-        res.location('/');
-        res.status(201).end();
-    }
+        // Check if the provided email already exists
+        const emails = await User.findOne({ where: { emailAddress: req.body.emailAddress }});
+        if (emails) {
+          res.status(409).json({ errors: ["Email is already in use"] });
+        } else {
+            // Hash the password and create new user.
+            req.body.password = bcryptjs.hashSync(req.body.password);
+            user = await User.create(req.body);
+            res.location('/');
+            res.status(201).end();
+          }
+      }
 }));
 
 /* GET all courses listing (including the user that owns each course). */
@@ -148,10 +154,10 @@ router.get("/courses/:id", asyncHandler(async (req, res) => {
 /* POST a new course. */
 router.post('/courses', authenticateUser, [
   check('title')
-    .exists()
+    .exists({ checkNull: true, checkFalsy: true })
     .withMessage('Please provide a value for "title"'),
   check('description')
-    .exists()
+    .exists({ checkNull: true, checkFalsy: true })
     .withMessage('Please provide a value for "description"'),
   ], asyncHandler (async (req, res) => {
   const errors = validationResult(req);
@@ -161,9 +167,9 @@ router.post('/courses', authenticateUser, [
     res.status(400).json({ errors: errorMessages });
   } else {
       // Otherwise, add the new course.
-      console.log("Going to POST!");
+      console.log("Going to POST a new course!");
       course = await Course.create(req.body);
-      console.log("Did we make it?");
+      console.log("Course posting successful!");
       res.location('courses/' + course.id);
       res.status(201).end();
     }
@@ -172,10 +178,10 @@ router.post('/courses', authenticateUser, [
 /* Update a course. */
 router.put('/courses/:id', authenticateUser, [
   check('title')
-    .exists()
+    .exists({ checkNull: true, checkFalsy: true })
     .withMessage('Please provide a value for "title"'),
   check('description')
-    .exists()
+    .exists({ checkNull: true, checkFalsy: true })
     .withMessage('Please provide a value for "description"'),
   ], asyncHandler (async (req, res) => {
   const errors = validationResult(req);
@@ -187,7 +193,9 @@ router.put('/courses/:id', authenticateUser, [
       // Check if the course actually exists; if so, update the course with the new information.
       course = await Course.findByPk(req.params.id);
       if(course) {
+        console.log("Going to UPDATE a course!");
         await course.update(req.body);
+        console.log("Course update successful!");
         res.status(204).end();
       } else {
         res.status(404).json({ message: "Course Not Found" });
